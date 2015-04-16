@@ -1,0 +1,142 @@
+Qauke 2 for OS/2
+
+ID released Quake 2 sources under GPL - so I ported it to OS/2.
+
+You need:
+Installed version of Windows/Linux Quake 2
+OS/2 4 (maybe sound won't work in 3)
+TCP/IP
+(optionally) XFree86 or other XServer - for X version of Quake 2
+
+Using Quake 2:
+Copy files quake2.exe, r_soft.dll, r_softx.dll to your Quake 2 directory.
+You may rename quake2.exe to something other, if you want to have both Windows
+	and OS/2 versions installed.
+Copy file gameos2.dll to your baseq2 subdirectory.
+Make sure there are these variables in your baseq2\config.cfg file.
+	vid_ref "soft"
+	sw_mode "0"
+Run quake2.exe. If it doesn't work, try to delete baseq2\config.cfg file; maybe
+	the Windows version set some unacceptable options there. If it still
+	doesn't work, read the chapter about video below.
+
+Running Quake 2 as a server:
+Run quake2 +set dedicated 1
+This will automatically increase priority of process so that it has good
+response even when the system is loaded.
+
+Video:
+Quake 2 engine needs screen resolution at least 320x240. Unfortunatelly, it is
+not guaranteed to have this video mode in OS/2. There are three ways you can get
+video mode 320x240:
+- mode-X (default) - directly reprogram the VGA videocard to banked mode. The
+  video setup routines were copied from OS/2 QuakeWorld (which were copied from
+  original DOS Quake 1). This should work for most VGA cards, but it might
+  display weird things on some crazy cards. You can disable mode-X by setting
+  environment variable QUAKE2_NO_MODEX to any value.
+- OS/2 extended modes - supported only by some OS/2 display drivers. OS/2
+  extended modes are used not only for 320x240 but also for other Quake 2
+  videomodes that you set: 400x300, 512x384 and more. Available modes depend on
+  your video card and video driver. If you don't have the modes, you can maybe
+  help it by creating svgadata.pmi file with svga.exe. You can disable using
+  OS/2 exnded videomodes by setting QUAKE2_NO_OS2VID environment variable.
+- using 320x200 (which is always available) and stretching the image. If other
+  methods fail, the OS/2 quake video driver sets videomode 320x200, but tells
+  the Quake engine that it has 320x240 and stretches the lines. You get playable
+  game, but texts will be damaged a bit because of missing lines when
+  transforming 320x240 image produced by Quake engine into 320x200 on screen.
+  Stretching to 320x200 is also used, if you set some high-resolution mode in
+  Quake 2 and this mode is not available via OS/2 extended mode interface.
+Generally, video modes are used in this order:
+1. If the requested mode is 320x240 and variable QUAKE2_NO_MODEX is not set, use
+   Mode-X.
+2. If variable QUAKE2_NO_OS2VID is not set, try to set up OS/2 extended
+   videomode
+3. Otherwise, use physical mode 320x200 and stretch image to it -- it causes
+   that texts will be worse readable (or unreadable -- if you are stretching
+   from high-resolution video mode)
+
+Using X-Window:
+Quake 2 can run in X-window. You must set variable vid_ref to "softx". Set it in
+config.cfg or on command line (quake2 +set vid_ref softx). If you use X-window,
+ref "softx" gets written into your config file. You have to run quake2 +set
+vid_ref soft to run quake2 in full screen again. Video menu allows you to swap
+between X and Full-screen session at run-time but don't do it.
+
+Sound:
+Quake 2 uses DART. DART is available in OS/2 4 and maybe in OS/2 3 with
+current fixpacks (I don't have it, so I don't know). Default setting is 11025HZ,
+16bit, stereo. You can change it with variables sndspeed, sndbits and
+sndchannels (on command line, type quake2 +set sndspeed <speed> +set sndbits <8
+or 16> +set sndchannels <1 or 2>). You can also change these values on console
+while running Quake, but then you must restart sound system with snd_restart
+command. Sound does not have autodetection - if your sound card can't do
+22050HZ-16bit-stereo, you have to change it with switches. 44100HZ, 16bit,
+stereo does not work on my computer - I don't know why.
+Note: setting higher sample rates or bits won't bring you better sound and will
+slow down game. Use only when necessary.
+
+Compiling Quake 2:
+To compile Quake 2, you need: EMX, GNU make, EMX multimedia extension (mm4emx11
+package on hobbes). XFree86 is optional.
+If you don't have XFree86 or you don't want to build X version, remove r_softx
+from TARGETS line in Makefile in os2 subdirectory.
+Quake 2 can be compiled with GCC 2.7.2.1 from EMX distribution or with newer GCC
+(I compiled it with GCC 3.0.4). If you use GCC 2.7.2.1, you need to change
+CFLAGS in Makefile, because GCC 2.7.2.1 doesn't understand all those
+optimization flags. Note that GCC 3.0.4 has bug in -funroll-loops -- don't use this flag.
+Go to os2 subdirectory and type make build_release to compile Quake 2. Don't
+strip resulting dll libraries, otherwise they will be unlinkable.
+
+FAQ:
+Q: Sound doesn't work.
+A: You must have OS/2 4 or (maybe) OS/2 3 with current fixpacks.
+   Try using +set sndspeed, sndbits, sndchannels to set parameters
+   supported by your sound card. This port does not have autodetection.
+
+Q: Sound is shattered or is played too late.
+A: Set different value in os2_dma_sound_shift variable. Try both positive and
+   negative values. Default is 128. Also try to set different speed and bits.
+
+Q: Video doesn't work.
+A: Try SET QUAKE2_NO_MODEX=x and if it still doesn't work, try SET
+   QUAKE2_NO_OS2VID=x. With both these variables set, video should work, but
+   texts will be hardly readable.
+
+Q: I get Error: VioScrLock: 494
+A: You must run Quake 2 in full-screen session, not in vio window
+
+Q: I see Error: UDP_OpenSocket.
+A: You don't have TCP/IP properly configured -- or you don't have it at all.
+
+Q: Quake writes _X11TransSocketINETConnect: can't connect.
+A: Run some XServer or run quake on full-screen VGA with command
+quake2 +set vid_ref soft
+
+Q: Quake is slow in X-window
+A: X-Window is slow by design. Unless you have 500MHz machine, it will be
+   unplayable. Use full-screen mode. If you really want to run X-Window
+   version, you should decrease resolution of your display.
+
+Q: Quake in X-window displays bad colors.
+A: It ain't my fault. Linux version has the same problems. Switch your XServer
+   to different color depth.
+
+Q: Is there GL version of Quake 2 to take adventage of 3D cards?
+A: No.
+
+Known bugs:
+If you save and load game in "Big Gun" level, it crashes when exiting this
+level. It is a bug in Quake. Linux version crashes there too. Do not save/load
+game there.
+
+In map "Outer Hangar" you get a segfault, if you get killed by the ventilator in
+the water.
+
+It might crash, if you set videomode by changing the value of "sw_mode" variable
+from console. Again -- bug in Quake. I attempted to fix it, it doesn't crash in
+most cases, but it still can crash. Set videomode in the menu.
+
+Some lamer decided to put raw function pointers in savegame files. If you
+recompile gameos2.dll, you lose all saved games.
+

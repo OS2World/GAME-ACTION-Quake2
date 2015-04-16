@@ -1,0 +1,2 @@
+#!/bin/sh
+rm -rf releasei386-glibc

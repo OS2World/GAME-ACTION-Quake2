@@ -1,0 +1,13 @@
+#!/bin/sh
+cd linux
+make build_release
+cp releasei386-glibc/quake2 ../../..
+cp releasei386-glibc/ref_soft.so ../../..
+cp releasei386-glibc/ref_softx.so ../../..
+cp releasei386-glibc/gamei386.so ../../../baseq2/
+cp releasei386-glibc/ctf/gamei386.so ../../../ctf/
+strip ../../../quake2
+strip ../../../ref_soft.so
+strip ../../../ref_softx.so
+strip ../../../baseq2/gamei386.so
+strip ../../../ctf/gamei386.so
